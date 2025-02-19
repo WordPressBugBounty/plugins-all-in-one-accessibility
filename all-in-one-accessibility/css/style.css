@@ -1,0 +1,70 @@
+.accessibility-buttons {
+	width: 50%
+}
+.accessibility-buttons a {
+	background-color: #fff;
+	color: #4d4d4d;
+	font-weight: 600;
+	padding: 3px 8px;
+	border: 1px solid #4d4d4d;
+	display: inline-block;
+	border-radius: 3px;
+	text-decoration: none
+}
+.accessibility-buttons a.active {
+	color: #ccc;
+	background-color: #4d4d4d
+}
+.accessibility_options {
+	padding-top: 50px
+}
+.accessibility-container {
+	display: flex;
+	max-width: 1170px;
+	padding-left: 15px;
+	padding-right: 15px;
+	margin-left: auto;
+	margin-right: auto
+}
+#fontSizer {
+	width: 50%;
+	text-align: right;
+	display: flex;
+	line-height: 1;
+	justify-content: flex-end;
+	align-items: baseline
+}
+#fontSizer span {
+	margin-right: 5px;
+	font-weight: 600
+}
+#fontSizer a {
+	font-weight: 600;
+	text-decoration: none;
+	color: #000
+}
+#fontSizer a+a {
+	margin-left: 10px
+}
+#fontSizer a.active {
+	color: #f15a22
+}
+#fontSizer a.fontsize-small {
+	font-size: 1.0625em
+}
+#fontSizer a.fontsize-default {
+	font-size: 1.5em
+}
+#fontSizer a.fontsize-large {
+	font-size: 2em
+}
+.accessibility-settings {
+	position: absolute;
+	top: 0;
+	left: 0;
+	width: 100%;
+	background-color: #ccc;
+	padding: 7px 0;
+	z-index:1;
+	
+}/*# sourceMappingURL=style.css.map */
