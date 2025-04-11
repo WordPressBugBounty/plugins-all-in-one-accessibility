@@ -110,13 +110,13 @@ For more details, Please visit **[Partnership Opportunities Page](https://www.sk
 
 ## Screenshots
 
-![App Screenshot](https://www.skynettechnologies.com/sites/default/files/screenshot-1-free.jpg?v=4)
+[App Screenshot](https://www.skynettechnologies.com/sites/default/files/screenshot-1-free.jpg?v=4)
 
-![App Screenshot](https://www.skynettechnologies.com/sites/default/files/screenshot-2-free.jpgg?v=4)
+[App Screenshot](https://www.skynettechnologies.com/sites/default/files/screenshot-2-free.jpgg?v=4)
 
-![App Screenshot](https://www.skynettechnologies.com/sites/default/files/screenshot-3-free.jpg?v=4)
+[App Screenshot](https://www.skynettechnologies.com/sites/default/files/screenshot-3-free.jpg?v=4)
 
-![App Screenshot](https://www.skynettechnologies.com/sites/default/files/screenshot-4-free.jpg?v=4)
+[App Screenshot](https://www.skynettechnologies.com/sites/default/files/screenshot-4-free.jpg?v=4)
 
 == Screenshots ==
 1. Features of Pro Version
@@ -126,7 +126,7 @@ For more details, Please visit **[Partnership Opportunities Page](https://www.sk
 
 ## Video
 
-[![All in One Accessibility](https://img.youtube.com/vi/czwC0PKIqkc/0.jpg)](https://www.youtube.com/watch?v=czwC0PKIqkc)
+[All in One Accessibility](https://img.youtube.com/vi/X70XtvGyvSs/0.jpg)](https://www.youtube.com/watch?v=X70XtvGyvSs)
 
 ## Credits
 
