@@ -4,7 +4,7 @@
  * Plugin Name:         All in One Accessibility
  * Plugin URI:          https://www.skynettechnologies.com/all-in-one-accessibility
  * Description:         A plugin to create ADA Accessibility
- * Version:             1.9
+ * Version:             1.10
  * Requires at least:   4.9
  * Requires PHP:        7.0
  * Author:              Skynet Technologies USA LLC
@@ -72,7 +72,10 @@ if (is_admin()){
     $aioa_curl_result = wp_remote_post($aioa_url, $aioa_args);
     //print_r($aioa_curl_result);
     $widget_settings1 = (object)json_decode(wp_remote_retrieve_body($aioa_curl_result), true);
-    $widget_settings->Data = (object) $widget_settings1->Data;
+    if(!empty($widget_settings1->Data))
+    {
+      $widget_settings->Data = (object) $widget_settings1->Data;
+    }
   } else {
 
 
@@ -81,7 +84,10 @@ if (is_admin()){
     $aioa_curl_result = wp_remote_post($aioa_url, $aioa_args);
     //print_r($aioa_curl_result);
     $widget_settings1 = (object)json_decode(wp_remote_retrieve_body($aioa_curl_result), true);
-    $widget_settings->Data = (object) $widget_settings1->Data;
+    if(!empty($widget_settings1->Data))
+    {
+      $widget_settings->Data = (object) $widget_settings1->Data;
+    }
     
   }
 }
@@ -1084,7 +1090,9 @@ function add_ADAC()
   }
   $baseURL = "https://www.skynettechnologies.com/accessibility/js/all-in-one-accessibility-js-widget-minify.js";
   $ADAC_args = ["colorcode" => str_replace("#", "", $activeColor), "token" => $userid, "t" => rand(1, 10000000), "position" => $extra_info_position . "." . $extra_info_icon_type . "." . $extra_info_icon_size];
-  wp_enqueue_script("aioa-adawidget", add_query_arg($ADAC_args, $baseURL), [], null, true);
+   if (!is_admin()) {
+      wp_enqueue_script("aioa-adawidget", add_query_arg($ADAC_args, $baseURL), [], null, true);
+   }
 }
 add_filter("script_loader_tag", function ($tag, $handle) {
   if ("aioa-adawidget" !== $handle) {

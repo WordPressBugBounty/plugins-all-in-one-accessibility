@@ -4,7 +4,7 @@ Contributors: SkynetTechnologies.com
 Tags: Accessibility,WCAG,ADA,Section 508,WCAG 2.1,
 Requires at least: 4.9
 Tested up to: 6.7
-Stable tag: 1.9
+Stable tag: 1.10
 License: GPLv3
 Requires PHP: 5.6
 
@@ -141,11 +141,11 @@ This addon is developed and maintained by **[Skynet Technologies USA LLC](https:
 Feel Free to contact developer support or [Report a Problem](https://www.skynettechnologies.com/report-accessibility-problem)
 
 == Changelog ==
-= 1.9 =
+= 1.10 =
 * Performance improvement
 
 == Upgrade Notice ==
-= 1.9 =
+= 1.10 =
 Version fully tested with WordPress 6.7.1
 
 
