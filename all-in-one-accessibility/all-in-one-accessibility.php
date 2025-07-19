@@ -4,7 +4,7 @@
  * Plugin Name:         All in One Accessibility
  * Plugin URI:          https://www.skynettechnologies.com/all-in-one-accessibility
  * Description:         A plugin to create ADA Accessibility
- * Version:             1.10
+ * Version:             1.11
  * Requires at least:   4.9
  * Requires PHP:        7.0
  * Author:              Skynet Technologies USA LLC
@@ -13,23 +13,18 @@
  * License URI:         https://www.gnu.org/licenses/gpl-2.0.html
  */
 
-if (is_admin()){
+if (is_admin()) {
   $aioa_current_url_parse = parse_url(get_site_url());
   $aioa_website_hostname = $aioa_current_url_parse['host'];
-
-  $aioa_url = 'https://ada.skynettechnologies.us/api/get-autologin-link';
-  $aioa_args = ['sslverify' => false, 'body' => array('website' => "'" . base64_encode($aioa_website_hostname) . "'")];
-  $aioa_curl_result = wp_remote_post($aioa_url, $aioa_args);
-  $AutologinLink = (object)json_decode(wp_remote_retrieve_body($aioa_curl_result), true);
+  $check_any_settgins_save_wp = "";
+  $check_any_settgins_save_wp = get_option("position123");
 
   $widget_settings = (object) array();
 
-  if ($AutologinLink->status == 0) {
+  if (empty($check_any_settgins_save_wp)) {
     $aioa_current_url_parse = parse_url(get_site_url());
     $aioa_website_hostname = $aioa_current_url_parse['host'];
-
     $package_type = "free-widget";
-
     $arr_details = array(
       'name'              => get_bloginfo('name'),
       'email'             => get_bloginfo('admin_email'),
@@ -40,7 +35,7 @@ if (is_admin()){
       'end_date'          => '',
       'price'             => '',
       'discount_price'    => '0',
-      'platform'           => 'wordpress',
+      'platform'          => 'wordpress',
       'api_key'           => '',
       'is_trial_period'   => '',
       'is_free_widget'    => '1',
@@ -54,44 +49,13 @@ if (is_admin()){
       'payment_source'    => '',
     );
 
-
     $aioa_url = 'https://ada.skynettechnologies.us/api/add-user-domain';
     $aioa_args = ['sslverify' => false, 'body' => $arr_details];
     $aioa_curl_result = wp_remote_post($aioa_url, $aioa_args);
     $settingURLObject = (object)json_decode(wp_remote_retrieve_body($aioa_curl_result), true);
-
-
-    $aioa_url = 'https://ada.skynettechnologies.us/api/get-autologin-link';
-    $aioa_args = ['sslverify' => false, 'body' => array('website' =>  base64_encode($aioa_website_hostname))];
-    $aioa_curl_result = wp_remote_post($aioa_url, $aioa_args);
-    $AutologinLink = (object)json_decode(wp_remote_retrieve_body($aioa_curl_result), true);
-
-
-    $aioa_url = 'https://ada.skynettechnologies.us/api/widget-settings-platform';
-    $aioa_args = ['sslverify' => false, 'body' => array('website_url' => $aioa_website_hostname)];
-    $aioa_curl_result = wp_remote_post($aioa_url, $aioa_args);
-    //print_r($aioa_curl_result);
-    $widget_settings1 = (object)json_decode(wp_remote_retrieve_body($aioa_curl_result), true);
-    if(!empty($widget_settings1->Data))
-    {
-      $widget_settings->Data = (object) $widget_settings1->Data;
-    }
-  } else {
-
-
-    $aioa_url = 'https://ada.skynettechnologies.us/api/widget-settings-platform';
-    $aioa_args = ['sslverify' => false, 'body' => array('website_url' => $aioa_website_hostname)];
-    $aioa_curl_result = wp_remote_post($aioa_url, $aioa_args);
-    //print_r($aioa_curl_result);
-    $widget_settings1 = (object)json_decode(wp_remote_retrieve_body($aioa_curl_result), true);
-    if(!empty($widget_settings1->Data))
-    {
-      $widget_settings->Data = (object) $widget_settings1->Data;
-    }
-    
+ 
   }
 }
-
 
 add_action("admin_menu", "ada_accessibility_menu");
 if (!function_exists("ada_accessibility_menu")) {
