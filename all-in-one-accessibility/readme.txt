@@ -3,8 +3,8 @@ Plugin name: All in One Accessibility
 Contributors: SkynetTechnologies.com
 Tags: Accessibility,WCAG,ADA,Section 508,WCAG 2.1,
 Requires at least: 4.9
-Tested up to: 6.7
-Stable tag: 1.11
+Tested up to: 6.8
+Stable tag: 1.12
 License: GPLv3
 Requires PHP: 5.6
 
@@ -141,11 +141,11 @@ This addon is developed and maintained by **[Skynet Technologies USA LLC](https:
 Feel Free to contact developer support or [Report a Problem](https://www.skynettechnologies.com/report-accessibility-problem)
 
 == Changelog ==
-= 1.11 =
+= 1.12 =
 * Performance improvement
 
 == Upgrade Notice ==
-= 1.11 =
-Version fully tested with WordPress 6.7.1
+= 1.12 =
+Version fully tested with WordPress 6.8.2
 
 
