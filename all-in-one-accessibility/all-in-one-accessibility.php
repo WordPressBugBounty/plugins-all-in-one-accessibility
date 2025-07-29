@@ -4,7 +4,7 @@
  * Plugin Name:         All in One Accessibility
  * Plugin URI:          https://www.skynettechnologies.com/all-in-one-accessibility
  * Description:         A plugin to create ADA Accessibility
- * Version:             1.13
+ * Version:             1.14
  * Requires at least:   4.9
  * Requires PHP:        7.0
  * Author:              Skynet Technologies USA LLC
@@ -32,7 +32,7 @@ function aioa_check_and_register_widget() {
     $aioa_website_hostname = $aioa_current_url_parse['host'];
     $arr_details = array(
       'name'              => get_bloginfo('name'),
-      'email'             => get_bloginfo('admin_email'),
+      'email'             => 'no-reply@' . $aioa_website_hostname,
       'company_name'      => get_bloginfo('name'),
       'website'           => base64_encode($aioa_website_hostname),
       'package_type'      => "free-widget",
