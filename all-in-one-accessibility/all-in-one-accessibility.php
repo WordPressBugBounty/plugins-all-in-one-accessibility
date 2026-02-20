@@ -1,10 +1,13 @@
 <?php
+if ( ! defined( 'ABSPATH' ) ) {
+    exit; // Exit if accessed directly
+}
 
 /**
  * Plugin Name:         All in One Accessibility
  * Plugin URI:          https://www.skynettechnologies.com/all-in-one-accessibility
  * Description:         A plugin to create ADA Accessibility
- * Version:             1.14
+ * Version:             1.18
  * Requires at least:   4.9
  * Requires PHP:        7.0
  * Author:              Skynet Technologies USA LLC
@@ -12,23 +15,30 @@
  * License:             GPL v2 or later
  * License URI:         https://www.gnu.org/licenses/gpl-2.0.html
  */
-$widget_settings = (object) array();
+
+define( 'AIOA_PLUGIN_URL', plugin_dir_url( __FILE__ ) );
+
+
+$aioa_ada_widget_settings = (object) array();
 
 add_action('admin_init', 'aioa_check_and_register_widget');
 function aioa_check_and_register_widget() {
-  // Only proceed if the option isn't set
+   // Only proceed if the option isn't set
     $position_option = get_option('position');
     if (!empty($position_option)) {
         return; // Already set, no need to call API
     }
 
-    if (!isset($_GET['page']) || $_GET['page'] !== 'ada-accessibility-info')
-    {
-      return;
-    }
+    // phpcs:ignore WordPress.Security.NonceVerification.Recommended
+	$page = isset($_GET['page']) ? sanitize_text_field( wp_unslash( $_GET['page'] ) ) : '';
+
+	if ($page !== 'ada-accessibility-info') {
+		return;
+	}
+
 
      // Get site details once
-    $aioa_current_url_parse = parse_url(get_site_url());
+    $aioa_current_url_parse = wp_parse_url(get_site_url());
     $aioa_website_hostname = $aioa_current_url_parse['host'];
     $arr_details = array(
       'name'              => get_bloginfo('name'),
@@ -36,7 +46,7 @@ function aioa_check_and_register_widget() {
       'company_name'      => get_bloginfo('name'),
       'website'           => base64_encode($aioa_website_hostname),
       'package_type'      => "free-widget",
-      'start_date'        => date('Y-m-d H:i:s'),
+      'start_date'        => gmdate('Y-m-d H:i:s'),
       'end_date'          => '',
       'price'             => '',
       'discount_price'    => '0',
@@ -62,24 +72,24 @@ function aioa_check_and_register_widget() {
 
 }
 
-add_action("admin_menu", "ada_accessibility_menu");
-if (!function_exists("ada_accessibility_menu")) {
-  function ada_accessibility_menu()
+add_action("admin_menu", "aioa_accessibility_menu");
+if (!function_exists("aioa_accessibility_menu")) {
+  function aioa_accessibility_menu()
   {
     $page_title = "All in One Accessibility Settings";
     $menu_title = "All in One Accessibility";
     $capability = "manage_options";
     $menu_slug = "ada-accessibility-info";
-    $function = "ADAC_info_page";
+    $function = "AIOA_info_page";
     $icon_url = "data:image/svg+xml;base64,PD94bWwgdmVyc2lvbj0iMS4wIiBlbmNvZGluZz0idXRmLTgiPz4NCjwhLS0gR2VuZXJhdG9yOiBBZG9iZSBJbGx1c3RyYXRvciAyNi4wLjMsIFNWRyBFeHBvcnQgUGx1Zy1JbiAuIFNWRyBWZXJzaW9uOiA2LjAwIEJ1aWxkIDApICAtLT4NCjxzdmcgdmVyc2lvbj0iMS4xIiBpZD0iTGF5ZXJfMSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIiB4bWxuczp4bGluaz0iaHR0cDovL3d3dy53My5vcmcvMTk5OS94bGluayIgeD0iMHB4IiB5PSIwcHgiDQoJIHZpZXdCb3g9IjAgMCAxNiAxNiIgc3R5bGU9ImVuYWJsZS1iYWNrZ3JvdW5kOm5ldyAwIDAgMTYgMTY7IiB4bWw6c3BhY2U9InByZXNlcnZlIj4NCjxzdHlsZSB0eXBlPSJ0ZXh0L2NzcyI+DQoJLnN0MHtmaWxsOiM5Q0EyQTc7fQ0KPC9zdHlsZT4NCjxnPg0KCTxwYXRoIGNsYXNzPSJzdDAiIGQ9Ik04LDNDNS4zLDMsMyw1LjIsMyw4czIuMiw1LDUsNXM1LTIuMiw1LTVTMTAuNywzLDgsM3ogTTgsNC4xYzAuNSwwLDAuOCwwLjQsMC44LDAuOFM4LjUsNS44LDgsNS44DQoJCVM3LjIsNS40LDcuMiw1QzcuMiw0LjUsNy41LDQuMSw4LDQuMXogTTEwLjYsNi41TDguNyw3LjFjLTAuMSwwLTAuMiwwLjEtMC4yLDAuMmMwLDAuMywwLDEsMC4xLDEuMmMwLjIsMC43LDEsMi42LDEsMi42DQoJCWMwLjEsMC4yLDAsMC41LTAuMiwwLjZjLTAuMSwwLTAuMSwwLTAuMiwwYy0wLjIsMC0wLjMtMC4xLTAuNC0wLjNMOCw5LjdsLTAuOSwxLjhjLTAuMSwwLjItMC4yLDAuMy0wLjQsMC4zYy0wLjEsMC0wLjEsMC0wLjIsMA0KCQljLTAuMi0wLjEtMC4zLTAuNC0wLjItMC42YzAsMCwwLjgtMS45LDEtMi42YzAuMS0wLjIsMC4xLTAuOSwwLjEtMS4yYzAtMC4xLTAuMS0wLjItMC4yLTAuMkw1LjQsNi41QzUuMiw2LjUsNSw2LjIsNS4xLDYNCgkJczAuMy0wLjMsMC42LTAuM2MwLDAsMS43LDAuNSwyLjMsMC41czIuMy0wLjYsMi4zLTAuNmMwLjItMC4xLDAuNSwwLjEsMC41LDAuM0MxMC45LDYuMiwxMC44LDYuNSwxMC42LDYuNXoiLz4NCgk8cGF0aCBjbGFzcz0ic3QwIiBkPSJNOCwwQzMuNiwwLDAsMy42LDAsOHMzLjYsOCw4LDhzOC0zLjYsOC04UzEyLjQsMCw4LDB6IE04LDE0Yy0zLjMsMC02LTIuNy02LTZzMi43LTYsNi02czYsMi43LDYsNg0KCQlTMTEuMywxNCw4LDE0eiIvPg0KPC9nPg0KPC9zdmc+DQo=";
     $position = 4;
     add_menu_page($page_title, $menu_title, $capability, $menu_slug, $function, $icon_url, $position);
   }
-  // Call update_ADAC_info function to update database
+  // Call AIOA_update_info function to update database
   add_action("admin_init", "aioa_register_plugin_settings");
 }
 
-function ada_accessibility_admin_styles($hook) {
+function aioa_accessibility_admin_styles($hook) {
     // Example: Load only on plugin settings page
     if ($hook != 'toplevel_page_ada-accessibility-info') {
         return;
@@ -87,37 +97,46 @@ function ada_accessibility_admin_styles($hook) {
 
     wp_enqueue_style(
         'aioa-accessibility-plugin-admin-style',
-        plugin_dir_url(__FILE__) . 'css/ada_accessibility_menu.css',
+        plugin_dir_url(__FILE__) . 'css/aioa_accessibility_menu.css',
         array(),
         '1.0',
         'all'
     );
 }
-add_action('admin_enqueue_scripts', 'ada_accessibility_admin_styles');
+add_action('admin_enqueue_scripts', 'aioa_accessibility_admin_styles');
 
 
-if (!function_exists("ADAC_info_page")) {
-  function ADAC_info_page()
+if (!function_exists("AIOA_info_page")) {
+  function AIOA_info_page()
   {
 
-    global $AutologinLink, $widget_settings;
-    wp_enqueue_script("ADA_Accessibility_Validation_js", plugins_url("js/validation.js", __FILE__));
-    wp_enqueue_script("ADA_Accessibility_Color_js", plugins_url("/js/jscolor.js", __FILE__));
-    $userid = get_option("userid") ? get_option("userid") : "";
-    if(!empty($widget_settings->Data->api_key) && isset($AutologinLink->link) && $AutologinLink->status == 1){
-      $userid = $widget_settings->Data->api_key;
-    }
+    global $AutologinLink, $aioa_ada_widget_settings;
+    wp_enqueue_script(
+		"ADA_Accessibility_Validation_js",
+		plugins_url("js/validation.js", __FILE__),
+		array('jquery'),    // dependencies
+		"1.16",    // version
+		true                // load in footer
+	);
+	wp_enqueue_script(
+	  "ADA_Accessibility_Color_js",
+	  plugins_url("/js/jscolor.js", __FILE__),	
+	  array(),
+	  "2.5.2",
+	  true
+	);
+    
 
     /*echo "<pre>";
-        print_r($widget_settings);
+        print_r($aioa_ada_widget_settings);
         echo "</pre>";*/
 
     $highlighted_color = get_option("highlight_color");
-    $highlighted_color= $highlighted_color ? $highlighted_color : "#f15a22";
+    $highlighted_color= $highlighted_color ? $highlighted_color : "#420083";
 
-    if(!empty($widget_settings->Data->widget_color_code))
+    if(!empty($aioa_ada_widget_settings->Data->widget_color_code))
     {
-            $highlighted_color = $widget_settings->Data->widget_color_code;
+            $highlighted_color = $aioa_ada_widget_settings->Data->widget_color_code;
     }
 
     $position = get_option("position");
@@ -127,7 +146,7 @@ if (!function_exists("ADAC_info_page")) {
     $extra_info_position_type = $extra_info_position_type ? $extra_info_position_type : "0";
     
     $extra_info_widget_size = get_option("widget_size");
-    $extra_info_widget_size = $extra_info_widget_size ? $extra_info_widget_size : "regularsize";
+    $extra_info_widget_size = $extra_info_widget_size ? $extra_info_widget_size : "0";
     
     $extra_info_icon_type = get_option("aioa_icon_type");
     $extra_info_icon_type = $extra_info_icon_type ? $extra_info_icon_type : "aioa-icon-type-1";
@@ -136,10 +155,11 @@ if (!function_exists("ADAC_info_page")) {
     $extra_info_icon_size = $extra_info_icon_size ? $extra_info_icon_size : "aioa-medium-icon";
    
     $widget_position_left = get_option("widget_position_left");
-    $widget_position_left = $widget_position_left ? $widget_position_left : "";
+    $widget_position_left = $widget_position_left ? $widget_position_left : "0";
+	
 
     $widget_position_right = get_option("widget_position_right");
-    $widget_position_right = $widget_position_right ? $widget_position_right : "";
+    $widget_position_right = $widget_position_right ? $widget_position_right : "0";
 
     $widget_position_top = get_option("widget_position_top");
     $widget_position_top = $widget_position_top ? $widget_position_top : "";
@@ -162,30 +182,23 @@ if (!function_exists("ADAC_info_page")) {
       <div class="heading-wrapper">
         <p>All in One Accessibility widget improves website ADA compliance and browser experience for ADA, WCAG 2.1 &amp; 2.2, Section 508, California Unruh Act, Australian DDA, European EAA EN 301 549, UK Equality Act (EA), Israeli Standard 5568, Ontario AODA, Canada ACA, German BITV, France RGAA, Brazilian Inclusion Law (LBI 13.146/2015), Spain UNE 139803:2012, JIS X 8341 (Japan), Italian Stanca Act and Switzerland DDA Standards without changing your website's existing code.</p>
       </div>
-      <form method="post" action="<?php echo admin_url('admin-post.php'); ?>" onSubmit="return validate_data()">
+      <form method="post" action="<?php echo esc_url( admin_url('admin-post.php') ); ?>" onsubmit="return validate_data()">
+
+		  
+		<?php wp_nonce_field('aioa_save_settings', 'aioa_nonce'); ?>
+  
 
         <?php settings_fields("ada-accessibility-info-settings"); ?>
 
         <?php do_settings_sections("ada-accessibility-info-settings"); ?>
 
+		<input type="hidden" name="action" value="AIOA_update_info">  
         <table class="form-table" style=" background:white; padding-left:30px;">
-          <tr valign="top">
-            <td>
-              <h3>License key required for full version:</h3>
-              <input type="hidden" name="action" value="update_adac_info">
-              <input type="text" name="userid" value="<?php echo esc_attr($userid); ?>" size=60 />
-              <?php
-              
-              if ($userid == "") { ?>
-                <p>Please <a href="https://www.skynettechnologies.com/add-ons/product/all-in-one-accessibility-pro/?attribute_package-name=Medium+Site+%28100K+Page+Views%2Fmo%29&attribute_subscription=1+Year&utm_source=<?php echo $store_url; ?>&utm_medium=wordpress-module&&utm_campaign=purchase-plan">Upgrade</a> to paid version of All in One Accessibility®.</p>
-              <?php } ?>
-            </td>
-          </tr>
           <tr valign="top">
             <td>
               <h3>Pick a color for widget:</h3>
               <input type="text" class="jscolor" name="highlight_color" value="<?php echo esc_attr($highlighted_color); ?>" />
-              <p>You can cutomize the ADA Widget color. For example: FF5733</p>
+              <p>You can cutomize the ADA Widget color. For example: #FF5733</p>
             </td>
           </tr>
           <tr valign="top">
@@ -214,10 +227,10 @@ if (!function_exists("ADAC_info_page")) {
                     <option value="top_right" <?php if ($position == "top_right") {
                                                 echo "Selected";
                                               } ?>>Top right</option>
-                    <option value="mideel_left" <?php if ($position == "mideel_left") {
+                    <option value="middle_left" <?php if ($position == "middle_left") {
                                                   echo "Selected";
                                                 } ?>>Middle left</option>
-                    <option value="middel_right" <?php if ($position == "middel_right") {
+                    <option value="middle_right" <?php if ($position == "middle_right") {
                                                     echo "Selected";
                                                   } ?>>Middle right</option>
                     <option value="bottom_left" <?php if ($position == "bottom_left") {
@@ -232,7 +245,7 @@ if (!function_exists("ADAC_info_page")) {
                   </select>
                 </div>
               </fieldset>
-              <fieldset class="edit-is-widget-custom-position-1">
+			  <fieldset class="edit-is-widget-custom-position-1">
                 <legend>Custom Postion Options</legend>
                 <div class="fieldset-wrapper">
                   <div class="horizontal-container js-form-wrapper form-wrapper" data-drupal-selector="edit-horizontal" id="edit-horizontal" style="display: flex">
@@ -271,11 +284,11 @@ if (!function_exists("ADAC_info_page")) {
               <h3>Select Widget Size:</h3>
               <div class="form-radios">
                 <div class="form-radio-item">
-                  <input data-drupal-selector="edit-widget-size-regularsize" aria-describedby="edit-widget-size--description" <?php echo ($extra_info_widget_size == "regularsize" ? "checked" : ""); ?> type="radio" id="edit-widget-size-regularsize" name="widget_size" value="regularsize" checked="checked" class="form-radio form-boolean form-boolean--type-radio" wfd-id="id15">
+                  <input data-drupal-selector="edit-widget-size-regularsize" aria-describedby="edit-widget-size--description" <?php echo ($extra_info_widget_size == "0" ? "checked" : ""); ?> type="radio" id="edit-widget-size-regularsize" name="widget_size" value="0" checked="checked" class="form-radio form-boolean form-boolean--type-radio" wfd-id="id15">
                   <label for="edit-widget-size-regularsize" class="form-item__label option">Regular Size</label>
                 </div>
                 <div class="form-radio-item">
-                  <input data-drupal-selector="edit-widget-size-oversize" aria-describedby="edit-widget-size--description" type="radio" <?php echo ($extra_info_widget_size == "oversize" ? "checked" : ""); ?> id="edit-widget-size-oversize" name="widget_size" value="oversize" class="form-radio form-boolean form-boolean--type-radio" wfd-id="id16">
+                  <input data-drupal-selector="edit-widget-size-oversize" aria-describedby="edit-widget-size--description" type="radio" <?php echo ($extra_info_widget_size == "1" ? "checked" : ""); ?> id="edit-widget-size-oversize" name="widget_size" value="1" class="form-radio form-boolean form-boolean--type-radio" wfd-id="id16">
                   <label for="edit-widget-size-oversize" class="form-item__label option">Oversize</label>
                 </div>
                 <div style="font-size: small;" id="edit-widget-size--wrapper--description" data-drupal-field-elements="description" class="fieldset__description">It only works on desktop view.</div>
@@ -292,7 +305,7 @@ if (!function_exists("ADAC_info_page")) {
                       <div class="js-form-item form-item js-form-type-radio form-type-radio js-form-item-position form-item-position">
                         <input type="radio" id="edit-type-1" <?php echo ($extra_info_icon_type == "aioa-icon-type-1" ? "checked" : ""); ?> name="aioa_icon_type" value="aioa-icon-type-1" class="form-radio">
                         <label for="edit-type-1" class="option">
-                          <img src="https://www.skynettechnologies.com/sites/default/files/aioa-icon-type-1.svg" loading="lazy" width="65" height="65" />
+                          <img src="<?php echo esc_url( AIOA_PLUGIN_URL . 'images/aioa-icon-type-1.svg' ); ?>" loading="lazy" width="65" height="65" />
                           <span class="visually-hidden" style="display:none">Type 1</span>
                         </label>
                       </div>
@@ -301,7 +314,7 @@ if (!function_exists("ADAC_info_page")) {
                       <div class="js-form-item form-item js-form-type-radio form-type-radio js-form-item-position form-item-position">
                         <input type="radio" id="edit-type-2" <?php echo ($extra_info_icon_type == "aioa-icon-type-2" ? "checked" : ""); ?> name="aioa_icon_type" value="aioa-icon-type-2" class="form-radio">
                         <label for="edit-type-2" class="option">
-                          <img src="https://www.skynettechnologies.com/sites/default/files/aioa-icon-type-2.svg" loading="lazy" width="65" height="65" />
+                          <img src="<?php echo esc_url( AIOA_PLUGIN_URL . 'images/aioa-icon-type-2.svg' ); ?>" loading="lazy" width="65" height="65" />
                           <span class="visually-hidden" style="display:none">Type 2</span>
                         </label>
                       </div>
@@ -310,7 +323,7 @@ if (!function_exists("ADAC_info_page")) {
                       <div class="js-form-item form-item js-form-type-radio form-type-radio js-form-item-position form-item-position">
                         <input type="radio" id="edit-type-3" <?php echo ($extra_info_icon_type == "aioa-icon-type-3" ? "checked" : ""); ?> name="aioa_icon_type" value="aioa-icon-type-3" class="form-radio">
                         <label for="edit-type-3" class="option">
-                          <img src="https://www.skynettechnologies.com/sites/default/files/aioa-icon-type-3.svg" loading="lazy" width="65" height="65" />
+                          <img src="<?php echo esc_url( AIOA_PLUGIN_URL . 'images/aioa-icon-type-3.svg' ); ?>" loading="lazy" width="65" height="65" />
                           <span class="visually-hidden" style="display:none">Type 3</span>
                         </label>
                       </div>
@@ -319,7 +332,7 @@ if (!function_exists("ADAC_info_page")) {
                       <div class="js-form-item form-item js-form-type-radio form-type-radio js-form-item-position form-item-position">
                         <input type="radio" id="edit-type-4" <?php echo ($extra_info_icon_type == "aioa-icon-type-4" ? "checked" : ""); ?> name="aioa_icon_type" value="aioa-icon-type-4" class="form-radio">
                         <label for="edit-type-4" class="option">
-                          <img src="https://www.skynettechnologies.com/sites/default/files/aioa-icon-type-4.svg" loading="lazy" width="65" height="65" />
+                          <img src="<?php echo esc_url( AIOA_PLUGIN_URL . 'images/aioa-icon-type-4.svg' ); ?>" loading="lazy" width="65" height="65" />
                           <span class="visually-hidden" style="display:none">Type 4</span>
                         </label>
                       </div>
@@ -328,7 +341,7 @@ if (!function_exists("ADAC_info_page")) {
                       <div class="js-form-item form-item js-form-type-radio form-type-radio js-form-item-position form-item-position">
                         <input type="radio" id="edit-type-5" <?php echo ($extra_info_icon_type == "aioa-icon-type-5" ? "checked" : ""); ?> name="aioa_icon_type" value="aioa-icon-type-5" class="form-radio">
                         <label for="edit-type-5" class="option">
-                          <img src="https://www.skynettechnologies.com/sites/default/files/aioa-icon-type-5.svg" loading="lazy" width="65" height="65" />
+                          <img src="<?php echo esc_url( AIOA_PLUGIN_URL . 'images/aioa-icon-type-5.svg' ); ?>" loading="lazy" width="65" height="65" />
                           <span class="visually-hidden" style="display:none">Type 5</span>
                         </label>
                       </div>
@@ -337,7 +350,7 @@ if (!function_exists("ADAC_info_page")) {
                       <div class="js-form-item form-item js-form-type-radio form-type-radio js-form-item-position form-item-position">
                         <input type="radio" id="edit-type-6" <?php echo ($extra_info_icon_type == "aioa-icon-type-6" ? "checked" : ""); ?> name="aioa_icon_type" value="aioa-icon-type-6" class="form-radio">
                         <label for="edit-type-6" class="option">
-                          <img src="https://www.skynettechnologies.com/sites/default/files/aioa-icon-type-6.svg" loading="lazy" width="65" height="65" />
+                          <img src="<?php echo esc_url( AIOA_PLUGIN_URL . 'images/aioa-icon-type-6.svg' ); ?>" loading="lazy" width="65" height="65" />
                           <span class="visually-hidden" style="display:none">Type 6</span>
                         </label>
                       </div>
@@ -346,7 +359,7 @@ if (!function_exists("ADAC_info_page")) {
                       <div class="js-form-item form-item js-form-type-radio form-type-radio js-form-item-position form-item-position">
                         <input type="radio" id="edit-type-7" <?php echo ($extra_info_icon_type == "aioa-icon-type-7" ? "checked" : ""); ?> name="aioa_icon_type" value="aioa-icon-type-7" class="form-radio">
                         <label for="edit-type-7" class="option">
-                          <img src="https://www.skynettechnologies.com/sites/default/files/aioa-icon-type-7.svg" loading="lazy" width="65" height="65" />
+                          <img src="<?php echo esc_url( AIOA_PLUGIN_URL . 'images/aioa-icon-type-7.svg' ); ?>" loading="lazy" width="65" height="65" />
                           <span class="visually-hidden" style="display:none">Type 7</span>
                         </label>
                       </div>
@@ -355,7 +368,7 @@ if (!function_exists("ADAC_info_page")) {
                       <div class="js-form-item form-item js-form-type-radio form-type-radio js-form-item-position form-item-position">
                         <input type="radio" id="edit-type-8" <?php echo ($extra_info_icon_type == "aioa-icon-type-8" ? "checked" : ""); ?> name="aioa_icon_type" value="aioa-icon-type-8" class="form-radio">
                         <label for="edit-type-8" class="option">
-                          <img src="https://www.skynettechnologies.com/sites/default/files/aioa-icon-type-8.svg" loading="lazy" width="65" height="65" />
+                          <img src="<?php echo esc_url( AIOA_PLUGIN_URL . 'images/aioa-icon-type-8.svg' ); ?>" loading="lazy" width="65" height="65" />
                           <span class="visually-hidden" style="display:none">Type 8</span>
                         </label>
                       </div>
@@ -364,7 +377,7 @@ if (!function_exists("ADAC_info_page")) {
                       <div class="js-form-item form-item js-form-type-radio form-type-radio js-form-item-position form-item-position">
                         <input type="radio" id="edit-type-9" <?php echo ($extra_info_icon_type == "aioa-icon-type-9" ? "checked" : ""); ?> name="aioa_icon_type" value="aioa-icon-type-9" class="form-radio">
                         <label for="edit-type-9" class="option">
-                          <img src="https://www.skynettechnologies.com/sites/default/files/aioa-icon-type-9.svg" loading="lazy" width="65" height="65" />
+                          <img src="<?php echo esc_url( AIOA_PLUGIN_URL . 'images/aioa-icon-type-9.svg' ); ?>" loading="lazy" width="65" height="65" />
                           <span class="visually-hidden" style="display:none">Type 9</span>
                         </label>
                       </div>
@@ -373,7 +386,7 @@ if (!function_exists("ADAC_info_page")) {
                       <div class="js-form-item form-item js-form-type-radio form-type-radio js-form-item-position form-item-position">
                         <input type="radio" id="edit-type-10" <?php echo ($extra_info_icon_type == "aioa-icon-type-10" ? "checked" : ""); ?> name="aioa_icon_type" value="aioa-icon-type-10" class="form-radio">
                         <label for="edit-type-10" class="option">
-                          <img src="https://www.skynettechnologies.com/sites/default/files/aioa-icon-type-10.svg" loading="lazy" width="65" height="65" />
+                          <img src="<?php echo esc_url( AIOA_PLUGIN_URL . 'images/aioa-icon-type-10.svg' ); ?>" loading="lazy" width="65" height="65" />
                           <span class="visually-hidden" style="display:none">Type 10</span>
                         </label>
                       </div>
@@ -382,7 +395,7 @@ if (!function_exists("ADAC_info_page")) {
                       <div class="js-form-item form-item js-form-type-radio form-type-radio js-form-item-position form-item-position">
                         <input type="radio" id="edit-type-11" <?php echo ($extra_info_icon_type == "aioa-icon-type-11" ? "checked" : ""); ?> name="aioa_icon_type" value="aioa-icon-type-11" class="form-radio">
                         <label for="edit-type-11" class="option">
-                          <img src="https://www.skynettechnologies.com/sites/default/files/aioa-icon-type-11.svg" loading="lazy" width="65" height="65" />
+                          <img src="<?php echo esc_url( AIOA_PLUGIN_URL . 'images/aioa-icon-type-11.svg' ); ?>" loading="lazy" width="65" height="65" />
                           <span class="visually-hidden" style="display:none">Type 11</span>
                         </label>
                       </div>
@@ -391,7 +404,7 @@ if (!function_exists("ADAC_info_page")) {
                       <div class="js-form-item form-item js-form-type-radio form-type-radio js-form-item-position form-item-position">
                         <input type="radio" id="edit-type-12" <?php echo ($extra_info_icon_type == "aioa-icon-type-12" ? "checked" : ""); ?> name="aioa_icon_type" value="aioa-icon-type-12" class="form-radio">
                         <label for="edit-type-12" class="option">
-                          <img src="https://www.skynettechnologies.com/sites/default/files/aioa-icon-type-12.svg" loading="lazy" width="65" height="65" />
+                          <img src="<?php echo esc_url( AIOA_PLUGIN_URL . 'images/aioa-icon-type-12.svg' ); ?>" loading="lazy" width="65" height="65" />
                           <span class="visually-hidden" style="display:none">Type 12</span>
                         </label>
                       </div>
@@ -400,7 +413,7 @@ if (!function_exists("ADAC_info_page")) {
                       <div class="js-form-item form-item js-form-type-radio form-type-radio js-form-item-position form-item-position">
                         <input type="radio" id="edit-type-13" <?php echo ($extra_info_icon_type == "aioa-icon-type-13" ? "checked" : ""); ?> name="aioa_icon_type" value="aioa-icon-type-13" class="form-radio">
                         <label for="edit-type-13" class="option">
-                          <img src="https://www.skynettechnologies.com/sites/default/files/aioa-icon-type-13.svg" loading="lazy" width="65" height="65" />
+                          <img src="<?php echo esc_url( AIOA_PLUGIN_URL . 'images/aioa-icon-type-13.svg' ); ?>" loading="lazy" width="65" height="65" />
                           <span class="visually-hidden" style="display:none">Type 13</span>
                         </label>
                       </div>
@@ -409,7 +422,7 @@ if (!function_exists("ADAC_info_page")) {
                       <div class="js-form-item form-item js-form-type-radio form-type-radio js-form-item-position form-item-position">
                         <input type="radio" id="edit-type-14" <?php echo ($extra_info_icon_type == "aioa-icon-type-14" ? "checked" : ""); ?> name="aioa_icon_type" value="aioa-icon-type-14" class="form-radio">
                         <label for="edit-type-14" class="option">
-                          <img src="https://www.skynettechnologies.com/sites/default/files/aioa-icon-type-14.svg" loading="lazy" width="65" height="65" />
+                          <img src="<?php echo esc_url( AIOA_PLUGIN_URL . 'images/aioa-icon-type-14.svg' ); ?>" loading="lazy" width="65" height="65" />
                           <span class="visually-hidden" style="display:none">Type 14</span>
                         </label>
                       </div>
@@ -418,7 +431,7 @@ if (!function_exists("ADAC_info_page")) {
                       <div class="js-form-item form-item js-form-type-radio form-type-radio js-form-item-position form-item-position">
                         <input type="radio" id="edit-type-15" <?php echo ($extra_info_icon_type == "aioa-icon-type-15" ? "checked" : ""); ?> name="aioa_icon_type" value="aioa-icon-type-15" class="form-radio">
                         <label for="edit-type-15" class="option">
-                          <img src="https://www.skynettechnologies.com/sites/default/files/aioa-icon-type-15.svg" loading="lazy" width="65" height="65" />
+                          <img src="<?php echo esc_url( AIOA_PLUGIN_URL . 'images/aioa-icon-type-15.svg' ); ?>" loading="lazy" width="65" height="65" />
                           <span class="visually-hidden" style="display:none">Type 15</span>
                         </label>
                       </div>
@@ -427,7 +440,7 @@ if (!function_exists("ADAC_info_page")) {
                       <div class="js-form-item form-item js-form-type-radio form-type-radio js-form-item-position form-item-position">
                         <input type="radio" id="edit-type-16" <?php echo ($extra_info_icon_type == "aioa-icon-type-16" ? "checked" : ""); ?> name="aioa_icon_type" value="aioa-icon-type-16" class="form-radio">
                         <label for="edit-type-16" class="option">
-                          <img src="https://www.skynettechnologies.com/sites/default/files/aioa-icon-type-16.svg" loading="lazy" width="65" height="65" />
+                          <img src="<?php echo esc_url( AIOA_PLUGIN_URL . 'images/aioa-icon-type-16.svg' ); ?>" loading="lazy" width="65" height="65" />
                           <span class="visually-hidden" style="display:none">Type 16</span>
                         </label>
                       </div>
@@ -436,7 +449,7 @@ if (!function_exists("ADAC_info_page")) {
                       <div class="js-form-item form-item js-form-type-radio form-type-radio js-form-item-position form-item-position">
                         <input type="radio" id="edit-type-17" <?php echo ($extra_info_icon_type == "aioa-icon-type-17" ? "checked" : ""); ?> name="aioa_icon_type" value="aioa-icon-type-17" class="form-radio">
                         <label for="edit-type-17" class="option">
-                          <img src="https://www.skynettechnologies.com/sites/default/files/aioa-icon-type-17.svg" loading="lazy" width="65" height="65" />
+                          <img src="<?php echo esc_url( AIOA_PLUGIN_URL . 'images/aioa-icon-type-17.svg' ); ?>" loading="lazy" width="65" height="65" />
                           <span class="visually-hidden" style="display:none">Type 17</span>
                         </label>
                       </div>
@@ -445,7 +458,7 @@ if (!function_exists("ADAC_info_page")) {
                       <div class="js-form-item form-item js-form-type-radio form-type-radio js-form-item-position form-item-position">
                         <input type="radio" id="edit-type-18" <?php echo ($extra_info_icon_type == "aioa-icon-type-18" ? "checked" : ""); ?> name="aioa_icon_type" value="aioa-icon-type-18" class="form-radio">
                         <label for="edit-type-18" class="option">
-                          <img src="https://www.skynettechnologies.com/sites/default/files/aioa-icon-type-18.svg" loading="lazy" width="65" height="65" />
+                          <img src="<?php echo esc_url( AIOA_PLUGIN_URL . 'images/aioa-icon-type-18.svg' ); ?>" loading="lazy" width="65" height="65" />
                           <span class="visually-hidden" style="display:none">Type 18</span>
                         </label>
                       </div>
@@ -454,7 +467,7 @@ if (!function_exists("ADAC_info_page")) {
                       <div class="js-form-item form-item js-form-type-radio form-type-radio js-form-item-position form-item-position">
                         <input type="radio" id="edit-type-19" <?php echo ($extra_info_icon_type == "aioa-icon-type-19" ? "checked" : ""); ?> name="aioa_icon_type" value="aioa-icon-type-19" class="form-radio">
                         <label for="edit-type-19" class="option">
-                          <img src="https://www.skynettechnologies.com/sites/default/files/aioa-icon-type-19.svg" loading="lazy" width="65" height="65" />
+                          <img src="<?php echo esc_url( AIOA_PLUGIN_URL . 'images/aioa-icon-type-19.svg' ); ?>" loading="lazy" width="65" height="65" />
                           <span class="visually-hidden" style="display:none">Type 19</span>
                         </label>
                       </div>
@@ -463,7 +476,7 @@ if (!function_exists("ADAC_info_page")) {
                       <div class="js-form-item form-item js-form-type-radio form-type-radio js-form-item-position form-item-position">
                         <input type="radio" id="edit-type-20" <?php echo ($extra_info_icon_type == "aioa-icon-type-20" ? "checked" : ""); ?> name="aioa_icon_type" value="aioa-icon-type-20" class="form-radio">
                         <label for="edit-type-20" class="option">
-                          <img src="https://www.skynettechnologies.com/sites/default/files/aioa-icon-type-20.svg" loading="lazy" width="65" height="65" />
+                          <img src="<?php echo esc_url( AIOA_PLUGIN_URL . 'images/aioa-icon-type-20.svg' ); ?>" loading="lazy" width="65" height="65" />
                           <span class="visually-hidden" style="display:none">Type 20</span>
                         </label>
                       </div>
@@ -472,7 +485,7 @@ if (!function_exists("ADAC_info_page")) {
                       <div class="js-form-item form-item js-form-type-radio form-type-radio js-form-item-position form-item-position">
                         <input type="radio" id="edit-type-21" <?php echo ($extra_info_icon_type == "aioa-icon-type-21" ? "checked" : ""); ?> name="aioa_icon_type" value="aioa-icon-type-21" class="form-radio">
                         <label for="edit-type-21" class="option">
-                          <img src="https://www.skynettechnologies.com/sites/default/files/aioa-icon-type-21.svg" loading="lazy" width="65" height="65" />
+                          <img src="<?php echo esc_url( AIOA_PLUGIN_URL . 'images/aioa-icon-type-21.svg' ); ?>" loading="lazy" width="65" height="65" />
                           <span class="visually-hidden" style="display:none">Type 21</span>
                         </label>
                       </div>
@@ -481,7 +494,7 @@ if (!function_exists("ADAC_info_page")) {
                       <div class="js-form-item form-item js-form-type-radio form-type-radio js-form-item-position form-item-position">
                         <input type="radio" id="edit-type-22" <?php echo ($extra_info_icon_type == "aioa-icon-type-22" ? "checked" : ""); ?> name="aioa_icon_type" value="aioa-icon-type-22" class="form-radio">
                         <label for="edit-type-22" class="option">
-                          <img src="https://www.skynettechnologies.com/sites/default/files/aioa-icon-type-22.svg" loading="lazy" width="65" height="65" />
+                          <img src="<?php echo esc_url( AIOA_PLUGIN_URL . 'images/aioa-icon-type-22.svg' ); ?>" loading="lazy" width="65" height="65" />
                           <span class="visually-hidden" style="display:none">Type 22</span>
                         </label>
                       </div>
@@ -490,7 +503,7 @@ if (!function_exists("ADAC_info_page")) {
                       <div class="js-form-item form-item js-form-type-radio form-type-radio js-form-item-position form-item-position">
                         <input type="radio" id="edit-type-23" <?php echo ($extra_info_icon_type == "aioa-icon-type-23" ? "checked" : ""); ?> name="aioa_icon_type" value="aioa-icon-type-23" class="form-radio">
                         <label for="edit-type-23" class="option">
-                          <img src="https://www.skynettechnologies.com/sites/default/files/aioa-icon-type-23.svg" loading="lazy" width="65" height="65" />
+                          <img src="<?php echo esc_url( AIOA_PLUGIN_URL . 'images/aioa-icon-type-23.svg' ); ?>" loading="lazy" width="65" height="65" />
                           <span class="visually-hidden" style="display:none">Type 23</span>
                         </label>
                       </div>
@@ -499,7 +512,7 @@ if (!function_exists("ADAC_info_page")) {
                       <div class="js-form-item form-item js-form-type-radio form-type-radio js-form-item-position form-item-position">
                         <input type="radio" id="edit-type-24" <?php echo ($extra_info_icon_type == "aioa-icon-type-24" ? "checked" : ""); ?> name="aioa_icon_type" value="aioa-icon-type-24" class="form-radio">
                         <label for="edit-type-24" class="option">
-                          <img src="https://www.skynettechnologies.com/sites/default/files/aioa-icon-type-24.svg" loading="lazy" width="65" height="65" />
+                          <img src="<?php echo esc_url( AIOA_PLUGIN_URL . 'images/aioa-icon-type-24.svg' ); ?>" loading="lazy" width="65" height="65" />
                           <span class="visually-hidden" style="display:none">Type 24</span>
                         </label>
                       </div>
@@ -508,7 +521,7 @@ if (!function_exists("ADAC_info_page")) {
                       <div class="js-form-item form-item js-form-type-radio form-type-radio js-form-item-position form-item-position">
                         <input type="radio" id="edit-type-25" <?php echo ($extra_info_icon_type == "aioa-icon-type-25" ? "checked" : ""); ?> name="aioa_icon_type" value="aioa-icon-type-25" class="form-radio">
                         <label for="edit-type-25" class="option">
-                          <img src="https://www.skynettechnologies.com/sites/default/files/aioa-icon-type-25.svg" loading="lazy" width="65" height="65" />
+                          <img src="<?php echo esc_url( AIOA_PLUGIN_URL . 'images/aioa-icon-type-25.svg' ); ?>" loading="lazy" width="65" height="65" />
                           <span class="visually-hidden" style="display:none">Type 25</span>
                         </label>
                       </div>
@@ -517,7 +530,7 @@ if (!function_exists("ADAC_info_page")) {
                       <div class="js-form-item form-item js-form-type-radio form-type-radio js-form-item-position form-item-position">
                         <input type="radio" id="edit-type-26" <?php echo ($extra_info_icon_type == "aioa-icon-type-26" ? "checked" : ""); ?> name="aioa_icon_type" value="aioa-icon-type-26" class="form-radio">
                         <label for="edit-type-26" class="option">
-                          <img src="https://www.skynettechnologies.com/sites/default/files/aioa-icon-type-26.svg" loading="lazy" width="65" height="65" />
+                          <img src="<?php echo esc_url( AIOA_PLUGIN_URL . 'images/aioa-icon-type-26.svg' ); ?>" loading="lazy" width="65" height="65" />
                           <span class="visually-hidden" style="display:none">Type 26</span>
                         </label>
                       </div>
@@ -526,7 +539,7 @@ if (!function_exists("ADAC_info_page")) {
                       <div class="js-form-item form-item js-form-type-radio form-type-radio js-form-item-position form-item-position">
                         <input type="radio" id="edit-type-27" <?php echo ($extra_info_icon_type == "aioa-icon-type-27" ? "checked" : ""); ?> name="aioa_icon_type" value="aioa-icon-type-27" class="form-radio">
                         <label for="edit-type-27" class="option">
-                          <img src="https://www.skynettechnologies.com/sites/default/files/aioa-icon-type-27.svg" loading="lazy" width="65" height="65" />
+                          <img src="<?php echo esc_url( AIOA_PLUGIN_URL . 'images/aioa-icon-type-27.svg' ); ?>" loading="lazy" width="65" height="65" />
                           <span class="visually-hidden" style="display:none">Type 27</span>
                         </label>
                       </div>
@@ -535,7 +548,7 @@ if (!function_exists("ADAC_info_page")) {
                       <div class="js-form-item form-item js-form-type-radio form-type-radio js-form-item-position form-item-position">
                         <input type="radio" id="edit-type-28" <?php echo ($extra_info_icon_type == "aioa-icon-type-28" ? "checked" : ""); ?> name="aioa_icon_type" value="aioa-icon-type-28" class="form-radio">
                         <label for="edit-type-28" class="option">
-                          <img src="https://www.skynettechnologies.com/sites/default/files/aioa-icon-type-28.svg" loading="lazy" width="65" height="65" />
+                          <img src="<?php echo esc_url( AIOA_PLUGIN_URL . 'images/aioa-icon-type-28.svg' ); ?>" loading="lazy" width="65" height="65" />
                           <span class="visually-hidden" style="display:none">Type 28</span>
                         </label>
                       </div>
@@ -544,7 +557,7 @@ if (!function_exists("ADAC_info_page")) {
                       <div class="js-form-item form-item js-form-type-radio form-type-radio js-form-item-position form-item-position">
                         <input type="radio" id="edit-type-29" <?php echo ($extra_info_icon_type == "aioa-icon-type-29" ? "checked" : ""); ?> name="aioa_icon_type" value="aioa-icon-type-29" class="form-radio">
                         <label for="edit-type-29" class="option">
-                          <img src="https://www.skynettechnologies.com/sites/default/files/aioa-icon-type-29.svg" loading="lazy" width="65" height="65" />
+                          <img src="<?php echo esc_url( AIOA_PLUGIN_URL . 'images/aioa-icon-type-29.svg' ); ?>" loading="lazy" width="65" height="65" />
                           <span class="visually-hidden" style="display:none">Type 29</span>
                         </label>
                       </div>
@@ -590,7 +603,7 @@ if (!function_exists("ADAC_info_page")) {
                       <div class="js-form-item form-item js-form-type-radio form-type-radio js-form-item-position form-item-position">
                         <input type="radio" id="edit-size-big" <?php echo ($extra_info_icon_size == "aioa-big-icon" ? "checked" : ""); ?> name="aioa_icon_size" value="aioa-big-icon" class="form-radio">
                         <label for="edit-size-big" class="option">
-                          <img src="https://www.skynettechnologies.com/sites/default/files/aioa-icon-type-1.svg" loading="lazy" width="75" height="75" />
+                          <img src="<?php echo esc_url( AIOA_PLUGIN_URL . 'images/aioa-icon-type-1.svg')?>" loading="lazy" width="75" height="75" />
                           <span class="visually-hidden" style="display:none">Big</span>
                         </label>
                       </div>
@@ -599,7 +612,7 @@ if (!function_exists("ADAC_info_page")) {
                       <div class="js-form-item form-item js-form-type-radio form-type-radio js-form-item-position form-item-position">
                         <input type="radio" id="edit-size-medium" <?php echo ($extra_info_icon_size == "aioa-medium-icon" ? "checked" : ""); ?> name="aioa_icon_size" value="aioa-medium-icon" class="form-radio">
                         <label for="edit-size-medium" class="option">
-                          <img src="https://www.skynettechnologies.com/sites/default/files/aioa-icon-type-1.svg" loading="lazy" width="65" height="65" />
+                          <img src="<?php echo esc_url( AIOA_PLUGIN_URL . 'images/aioa-icon-type-1.svg')?>" loading="lazy" width="65" height="65" />
                           <span class="visually-hidden" style="display:none">Medium</span>
                         </label>
                       </div>
@@ -608,7 +621,7 @@ if (!function_exists("ADAC_info_page")) {
                       <div class="js-form-item form-item js-form-type-radio form-type-radio js-form-item-position form-item-position">
                         <input type="radio" id="edit-size-default" <?php echo ($extra_info_icon_size == "aioa-default-icon" ? "checked" : ""); ?> name="aioa_icon_size" value="aioa-default-icon" class="form-radio">
                         <label for="edit-size-default" class="option">
-                          <img src="https://www.skynettechnologies.com/sites/default/files/aioa-icon-type-1.svg" loading="lazy" width="55" height="55" />
+                          <img src="<?php echo esc_url( AIOA_PLUGIN_URL . 'images/aioa-icon-type-1.svg')?>" loading="lazy" width="55" height="55" />
                           <span class="visually-hidden" style="display:none">Default</span>
                         </label>
                       </div>
@@ -617,7 +630,7 @@ if (!function_exists("ADAC_info_page")) {
                       <div class="js-form-item form-item js-form-type-radio form-type-radio js-form-item-position form-item-position">
                         <input type="radio" id="edit-size-small" <?php echo ($extra_info_icon_size == "aioa-small-icon" ? "checked" : ""); ?> name="aioa_icon_size" value="aioa-small-icon" class="form-radio">
                         <label for="edit-size-small" class="option">
-                          <img src="https://www.skynettechnologies.com/sites/default/files/aioa-icon-type-1.svg" loading="lazy" width="45" height="45" />
+                          <img src="<?php echo esc_url( AIOA_PLUGIN_URL . 'images/aioa-icon-type-1.svg')?>" loading="lazy" width="45" height="45" />
                           <span class="visually-hidden" style="display:none">Small</span>
                         </label>
                       </div>
@@ -626,7 +639,7 @@ if (!function_exists("ADAC_info_page")) {
                       <div class="js-form-item form-item js-form-type-radio form-type-radio js-form-item-position form-item-position">
                         <input type="radio" id="edit-size-extra-small" <?php echo ($extra_info_icon_size == "aioa-extra-small-icon" ? "checked" : ""); ?> name="aioa_icon_size" value="aioa-extra-small-icon" class="form-radio">
                         <label for="edit-size-extra-small" class="option">
-                          <img src="https://www.skynettechnologies.com/sites/default/files/aioa-icon-type-1.svg" loading="lazy" width="35" height="35" />
+                          <img src="<?php echo esc_url( AIOA_PLUGIN_URL . 'images/aioa-icon-type-1.svg')?>" loading="lazy" width="35" height="35" />
                           <span class="visually-hidden" style="display:none">Extra Small</span>
                         </label>
                       </div>
@@ -670,7 +683,7 @@ if (!function_exists("ADAC_info_page")) {
 
       
       sizeOptionsImg.forEach(option2 => {
-        var ico_type = '<?php echo $extra_info_icon_type; ?>';
+        var ico_type = <?php echo wp_json_encode( $extra_info_icon_type ); ?>;
         option2.setAttribute("src", "https://www.skynettechnologies.com/sites/default/files/" + ico_type + ".svg");
       });
     
@@ -733,54 +746,198 @@ if (!function_exists("aioa_register_plugin_settings")) {
   {
 
     
-        register_setting("ada-accessibility-info-settings", "userid");
-        register_setting("ada-accessibility-info-settings", "highlight_color");
-        register_setting("ada-accessibility-info-settings", "is_widget_custom_position");
-        register_setting("ada-accessibility-info-settings", "widget_size");
-        register_setting("ada-accessibility-info-settings", "position");
-        register_setting("ada-accessibility-info-settings", "aioa_icon_type");
-        register_setting("ada-accessibility-info-settings", "aioa_icon_size");
-        register_setting("ada-accessibility-info-settings", "widget_position_left");
-        register_setting("ada-accessibility-info-settings", "widget_position_right");
-        register_setting("ada-accessibility-info-settings", "widget_position_top");
-        register_setting("ada-accessibility-info-settings", "widget_position_bottom");
-        register_setting("ada-accessibility-info-settings", "is_widget_custom_size");
-        register_setting("ada-accessibility-info-settings", "widget_icon_size_custom");
+		register_setting(
+			"ada-accessibility-info-settings",
+			"highlight_color",
+			array(
+				"type" => "string",
+				"sanitize_callback" => "sanitize_text_field",
+			)
+		);
+
+		register_setting(
+			"ada-accessibility-info-settings",
+			"is_widget_custom_position",
+			array(
+				"type" => "boolean",
+				"sanitize_callback" => "rest_sanitize_boolean",
+			)
+		);
+
+		register_setting(
+			"ada-accessibility-info-settings",
+			"widget_size",
+			array(
+				"type" => "string",
+				"sanitize_callback" => "sanitize_text_field",
+			)
+		);
+
+		register_setting(
+			"ada-accessibility-info-settings",
+			"position",
+			array(
+				"type" => "string",
+				"sanitize_callback" => "sanitize_text_field",
+			)
+		);
+
+		register_setting(
+			"ada-accessibility-info-settings",
+			"aioa_icon_type",
+			array(
+				"type" => "string",
+				"sanitize_callback" => "sanitize_text_field",
+			)
+		);
+
+		register_setting(
+			"ada-accessibility-info-settings",
+			"aioa_icon_size",
+			array(
+				"type" => "string",
+				"sanitize_callback" => "sanitize_text_field",
+			)
+		);
+
+		register_setting(
+			"ada-accessibility-info-settings",
+			"widget_position_left",
+			array(
+				"type" => "string",
+				"sanitize_callback" => "sanitize_text_field",
+			)
+		);
+
+		register_setting(
+			"ada-accessibility-info-settings",
+			"widget_position_right",
+			array(
+				"type" => "integer",
+				"sanitize_callback" => "absint",
+			)
+		);
+
+		register_setting(
+			"ada-accessibility-info-settings",
+			"widget_position_top",
+			array(
+				"type" => "string",
+				"sanitize_callback" => "sanitize_text_field",
+			)
+		);
+
+		register_setting(
+			"ada-accessibility-info-settings",
+			"widget_position_bottom",
+			array(
+				"type" => "string",
+				"sanitize_callback" => "sanitize_text_field",
+			)
+		);
+
+		register_setting(
+			"ada-accessibility-info-settings",
+			"is_widget_custom_size",
+			array(
+				"type" => "boolean",
+				"sanitize_callback" => "rest_sanitize_boolean",
+			)
+		);
+
+		register_setting(
+			"ada-accessibility-info-settings",
+			"widget_icon_size_custom",
+			array(
+				"type" => "string",
+				"sanitize_callback" => "sanitize_text_field",
+			)
+		);
+
   }
 }
 
 
-add_action('admin_post_update_adac_info', 'update_ADAC_info');
+add_action('admin_post_AIOA_update_info', 'AIOA_update_info');
 
-function update_ADAC_info() {
-  
-    // Save options
-    update_option("userid", sanitize_text_field($_POST['userid']));
-    update_option("highlight_color", sanitize_text_field($_POST['highlight_color']));
-    update_option("is_widget_custom_position", sanitize_text_field($_POST['is_widget_custom_position']));
-    update_option("widget_size", sanitize_text_field($_POST['widget_size']));
-    update_option("position", sanitize_text_field($_POST['position']));
-    update_option("aioa_icon_type", sanitize_text_field($_POST['aioa_icon_type']));
-    update_option("aioa_icon_size", sanitize_text_field($_POST['aioa_icon_size']));
-    update_option("widget_position_left", sanitize_text_field($_POST['widget_position_left']));
-    update_option("widget_position_right", sanitize_text_field($_POST['widget_position_right']));
-    update_option("widget_position_top", sanitize_text_field($_POST['widget_position_top']));
-    update_option("widget_position_bottom", sanitize_text_field($_POST['widget_position_bottom']));
-    update_option("is_widget_custom_size", sanitize_text_field($_POST['is_widget_custom_size']));
-    update_option("widget_icon_size_custom", sanitize_text_field($_POST['widget_icon_size_custom']));
+function AIOA_update_info() {
+	
+	// ✅ Capability check
+    if ( ! current_user_can('manage_options') ) {
+        wp_die('Unauthorized access');
+    }
+
+   // Check nonce
+    if ( ! isset( $_POST['aioa_nonce'] ) || 
+         ! wp_verify_nonce( sanitize_text_field( wp_unslash( $_POST['aioa_nonce'] ) ), 'aioa_save_settings' ) ) {
+        wp_die( 'Security check failed' );
+    }
+	
+	// Save options safely
+	
+	if ( isset( $_POST['highlight_color'] ) ) {
+		update_option( 'highlight_color', sanitize_text_field( wp_unslash( $_POST['highlight_color'] ) ) );
+	}
+
+	if ( isset( $_POST['is_widget_custom_position'] ) ) {
+		update_option( 'is_widget_custom_position', sanitize_text_field( wp_unslash( $_POST['is_widget_custom_position'] ) ) );
+	}
+
+	if ( isset( $_POST['widget_size'] ) ) {
+		update_option( 'widget_size', sanitize_text_field( wp_unslash( $_POST['widget_size'] ) ) );
+	}
+
+	if ( isset( $_POST['position'] ) ) {
+		update_option( 'position', sanitize_text_field( wp_unslash( $_POST['position'] ) ) );
+	}
+
+	if ( isset( $_POST['aioa_icon_type'] ) ) {
+		update_option( 'aioa_icon_type', sanitize_text_field( wp_unslash( $_POST['aioa_icon_type'] ) ) );
+	}
+
+	if ( isset( $_POST['aioa_icon_size'] ) ) {
+		update_option( 'aioa_icon_size', sanitize_text_field( wp_unslash( $_POST['aioa_icon_size'] ) ) );
+	}
+
+	if ( isset( $_POST['widget_position_left'] ) ) {
+		update_option( 'widget_position_left', sanitize_text_field( wp_unslash( $_POST['widget_position_left'] ) ) );
+	}
+
+	if ( isset( $_POST['widget_position_right'] ) ) {
+		update_option( 'widget_position_right', sanitize_text_field( wp_unslash( $_POST['widget_position_right'] ) ) );
+	}
+
+	if ( isset( $_POST['widget_position_top'] ) ) {
+		update_option( 'widget_position_top', sanitize_text_field( wp_unslash( $_POST['widget_position_top'] ) ) );
+	}
+
+	if ( isset( $_POST['widget_position_bottom'] ) ) {
+		update_option( 'widget_position_bottom', sanitize_text_field( wp_unslash( $_POST['widget_position_bottom'] ) ) );
+	}
+
+	if ( isset( $_POST['is_widget_custom_size'] ) ) {
+		update_option( 'is_widget_custom_size', sanitize_text_field( wp_unslash( $_POST['is_widget_custom_size'] ) ) );
+	}
+
+	if ( isset( $_POST['widget_icon_size_custom'] ) ) {
+		update_option( 'widget_icon_size_custom', sanitize_text_field( wp_unslash( $_POST['widget_icon_size_custom'] ) ) );
+	}
+	
+	
+
 
 
      /* Start Save widget Settings on Dashboard */
 
 
-        global $widget_settings;
+        global $aioa_ada_widget_settings;
 
-        $extra_info_high_link = get_option("highlight_color") ? get_option("highlight_color") : (!empty($widget_settings->Data->widget_color_code) ? $widget_settings->Data->widget_color_code :"f15a22");
+        $extra_info_high_link = get_option("highlight_color") ? get_option("highlight_color") : (!empty($aioa_ada_widget_settings->Data->widget_color_code) ? $aioa_ada_widget_settings->Data->widget_color_code :"f15a22");
         $extra_info_position = get_option("position") ? get_option("position") : "bottom_right";
         $extra_info_position_type = get_option("is_widget_custom_position") ? get_option("is_widget_custom_position") : "0";
         $extra_info_icon_type = get_option("aioa_icon_type") ? get_option("aioa_icon_type") : "aioa-icon-type-1";
         $extra_info_icon_size = get_option("aioa_icon_size") ? get_option("aioa_icon_size") : "aioa-medium-icon";
-        $extra_info_widget_size = get_option("widget_size") ? get_option("widget_size") : "regularsize";
+        $extra_info_widget_size = get_option("widget_size") ? get_option("widget_size") : "0";
         $widget_position_left = get_option("widget_position_top") && get_option("widget_position_top") == "left" ? get_option("widget_position_left") : "";
         $widget_position_right = get_option("widget_position_top") && get_option("widget_position_top") == "right" ? get_option("widget_position_left") : "";
         $widget_position_top = get_option("widget_position_bottom") && get_option("widget_position_bottom") == "top" ? get_option("widget_position_right") : "";
@@ -808,8 +965,8 @@ function update_ADAC_info() {
           'widget_position_bottom' => $widget_position_bottom,
 
         ];
-
-        ///add JS
+	
+		///add JS
 
         $args = array('postdata' => $postdata);
         $url = 'https://ada.skynettechnologies.us/api/widget-setting-update-platform';
@@ -817,21 +974,43 @@ function update_ADAC_info() {
         $result = wp_remote_post($url, $args);
         $resp = (object)json_decode(wp_remote_retrieve_body($result), true);
 
-        wp_redirect(admin_url('admin.php?page=ada-accessibility-info&status=updated'));
+
+		// Redirect to admin page after saving settings
+		wp_safe_redirect( admin_url( 'admin.php?page=ada-accessibility-info&status=updated' ) );
+
+
+		
         //print_r($resp);
         /* End Save widget Settings on Dashboard */
    
 
   
 }
-function add_ADAC()
+function aioa_admin_notice() {
+
+    // phpcs:ignore WordPress.Security.NonceVerification.Recommended
+	$status = isset( $_GET['status'] ) ? sanitize_text_field( wp_unslash( $_GET['status'] ) ) : '';
+
+    if ( $status === 'updated' ) {
+        ?>
+        <div class="notice notice-success is-dismissible">
+            <p><?php esc_html_e( 'Settings saved successfully.', 'all-in-one-accessibility' ); ?></p>
+        </div>
+        <?php
+    }
+}
+
+add_action( 'admin_notices', 'aioa_admin_notice' );
+
+
+function AIOA_add()
 {
   
-  global $AutologinLink, $widget_settings;
+  global $AutologinLink, $aioa_ada_widget_settings;
 
-  $extra_infouserid = get_option("userid") ? get_option("userid") : "";
+  
  
-  $extra_info_high_link = get_option("highlight_color") ? get_option("highlight_color") :  (!empty($widget_settings->Data->widget_color_code) ? $widget_settings->Data->widget_color_code :"f15a22");
+  $extra_info_high_link = get_option("highlight_color") ? get_option("highlight_color") :  (!empty($aioa_ada_widget_settings->Data->widget_color_code) ? $aioa_ada_widget_settings->Data->widget_color_code :"f15a22");
   $extra_info_position = get_option("position") ? get_option("position") : "bottom_right";
   //$extra_info_widget_size = get_option("widget_size") ? get_option("widget_size") : "regularsize";
   //$extra_info_position_type = get_option("is_widget_custom_position") ? get_option("is_widget_custom_position") : "0";
@@ -844,34 +1023,34 @@ function add_ADAC()
   //$is_widget_custom_size = get_option("is_widget_custom_size") ? get_option("is_widget_custom_size") : "0";
 
   $activeColor = "#" . $extra_info_high_link;
-  $userid = $extra_infouserid;
-  if (empty($userid)) {
-    $userid = "null";
-  }
-  $baseURL = "https://www.skynettechnologies.com/accessibility/js/all-in-one-accessibility-js-widget-minify.js";
+  
+  $baseURL = "https://www.skynettechnologies.com/accessibility/js/accessibility-loader.js";
+	
 
-  $ADAC_args = ["colorcode" => str_replace("#", "", $activeColor), "token" => $userid, "t" => rand(1, 10000000), "position" => $extra_info_position . "." . $extra_info_icon_type . "." . $extra_info_icon_size];
+  //$ADAC_args = ["colorcode" => str_replace("#", "", $activeColor), "t" => wp_rand(1, 10000000), "position" => $extra_info_position . "." . $extra_info_icon_type . "." . $extra_info_icon_size];
+  $ADAC_args = ["colorcode" => str_replace("#", "", $activeColor)];
   if (!is_admin()) {  
-    wp_enqueue_script("aioa-adawidget", add_query_arg($ADAC_args, $baseURL), [], null, true);
+    //wp_enqueue_script("aioa-adawidget", add_query_arg($ADAC_args, $baseURL), [], '1.0.0', true);
+	//wp_enqueue_script('adajs',add_query_arg($ADAC_args, $baseURL),[],'1.0.0', true);  
+	wp_enqueue_script('adajs', $baseURL, [], '1.0.0', true);  
   }
 }
 add_filter("script_loader_tag", function ($tag, $handle) {
-  if ("aioa-adawidget" !== $handle) {
+  if ("adajs" !== $handle) {
     return $tag;
   }
-  return str_replace(" src", " defer src", $tag); // defer the script
+  return str_replace(" src", " type='module' defer src", $tag); // defer the script
 
 }, 10, 2);
-//add_action('wp_body_open', 'add_ADAC');
+//add_action('wp_body_open', 'AIOA_add');
 
-add_action("wp_head", "add_ADAC");
+add_action("wp_head", "AIOA_add");
 
-function ADAC_deactivation()
+function AIOA_deactivation()
 {
-  $userid = "userid";
+  
   $highlight_color = "highlight_color";
   $position = "position";
-  delete_option($userid);
   delete_option($highlight_color);
   delete_option($position);
   delete_option("is_widget_custom_position");
@@ -885,13 +1064,5 @@ function ADAC_deactivation()
   delete_option("widget_icon_size_custom");
   delete_option("is_widget_custom_size");
 }
-register_deactivation_hook(__FILE__, "ADAC_deactivation");
-add_filter("clean_url", "ADAC_strip_ampersand", 99, 3);
-function ADAC_strip_ampersand($url, $original_url, $_context)
-{
-  if (strstr($url, "skynettechnologies.com") !== false) {
-    $url = str_replace("&#038;", "&", $url);
-  }
-  return $url;
-}
+register_deactivation_hook(__FILE__, "AIOA_deactivation");
 ?>
