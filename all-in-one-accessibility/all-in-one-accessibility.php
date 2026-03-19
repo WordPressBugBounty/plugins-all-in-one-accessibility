@@ -7,7 +7,7 @@ if ( ! defined( 'ABSPATH' ) ) {
  * Plugin Name:         All in One Accessibility
  * Plugin URI:          https://www.skynettechnologies.com/all-in-one-accessibility
  * Description:         A plugin to create ADA Accessibility
- * Version:             1.18
+ * Version:             1.19
  * Requires at least:   4.9
  * Requires PHP:        7.0
  * Author:              Skynet Technologies USA LLC
@@ -1023,25 +1023,25 @@ function AIOA_add()
   //$is_widget_custom_size = get_option("is_widget_custom_size") ? get_option("is_widget_custom_size") : "0";
 
   $activeColor = "#" . $extra_info_high_link;
-  
-  $baseURL = "https://www.skynettechnologies.com/accessibility/js/accessibility-loader.js";
+	
+  $baseURL = "https://www.skynettechnologies.com/accessibility/js/all-in-one-accessibility-js-widget-minify.js";
 	
 
-  //$ADAC_args = ["colorcode" => str_replace("#", "", $activeColor), "t" => wp_rand(1, 10000000), "position" => $extra_info_position . "." . $extra_info_icon_type . "." . $extra_info_icon_size];
-  $ADAC_args = ["colorcode" => str_replace("#", "", $activeColor)];
+  $ADAC_args = ["colorcode" => str_replace("#", "", $activeColor), "t" => wp_rand(1, 10000000), "position" => $extra_info_position . "." . $extra_info_icon_type . "." . $extra_info_icon_size];
+  //$ADAC_args = ["colorcode" => str_replace("#", "", $activeColor)];
   if (!is_admin()) {  
-    //wp_enqueue_script("aioa-adawidget", add_query_arg($ADAC_args, $baseURL), [], '1.0.0', true);
+    wp_enqueue_script("aioa-adawidget", add_query_arg($ADAC_args, $baseURL), [], '1.19.0', true);
 	//wp_enqueue_script('adajs',add_query_arg($ADAC_args, $baseURL),[],'1.0.0', true);  
-	wp_enqueue_script('adajs', $baseURL, [], '1.0.0', true);  
+	//wp_enqueue_script('adajs', $baseURL, [], '1.19.0', true);  
   }
 }
 add_filter("script_loader_tag", function ($tag, $handle) {
   if ("adajs" !== $handle) {
     return $tag;
   }
-  return str_replace(" src", " type='module' defer src", $tag); // defer the script
+  return str_replace(" src", " defer src", $tag); // defer the script
 
-}, 10, 2);
+}, 999, 2);
 //add_action('wp_body_open', 'AIOA_add');
 
 add_action("wp_head", "AIOA_add");

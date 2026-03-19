@@ -4,7 +4,7 @@ Contributors: skynettechnologies
 Tags: WCAG, ADA, EAA, IS 5568, Section 508
 Requires at least: 4.9
 Tested up to: 6.9
-Stable tag: 1.18
+Stable tag: 1.19
 License: GPLv2 or later
 Requires PHP: 7.0
 
@@ -220,6 +220,9 @@ English (USA), English (UK), English (Australian), English (Canadian), English (
 
 
 == Changelog ==
+
+= 1.19 =
+* bug fix
 
 = 1.18 =
 * Update a plugin as per wordpress guideline, remove licence-key field and updated readme.
